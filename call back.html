@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>callback</h1>
+</body>
+<script>
+    const cart = ["cap", "shoes"];
+
+
+
+    createOrder(cart, function () {
+        proceedToPayment(function () {
+            summary(function () {
+                walletBalance();
+            });
+        });
+    });
+
+
+    const prom = createOrder(cart);
+
+
+
+    prom.then(function (orderid) {
+        return proceedToPayment(orderid);
+    })
+
+        .then(function (success) {
+            return summary(success);
+        })
+
+        .then(function () {
+            return walletbalance();
+        });
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+</html>
