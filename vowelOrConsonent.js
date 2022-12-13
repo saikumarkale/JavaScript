@@ -7,7 +7,7 @@
 
 
 
-function vowel_or_consonent(char) {
+function vowelOrConsonent(char) {
 
     char.toLowerCase();
 
@@ -25,5 +25,5 @@ function vowel_or_consonent(char) {
         console.log("it's not a valid input");
     }
 }
-vowel_or_consonent('8');
+vowelOrConsonent('8');
 
