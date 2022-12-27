@@ -12,8 +12,17 @@ const person = {
 
 
 
+
 const nameAvailable = person.hasOwnProperty("name");
 const companyAvailable = person.hasOwnProperty("company");
 console.log(nameAvailable, companyAvailable);
+
+
+
+Object.freeze(person);
+Object.seal(person);
+person.name("ram");
+console.log(person.name);
+
 
 
