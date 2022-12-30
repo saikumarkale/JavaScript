@@ -53,3 +53,18 @@ console.log(a)
 
 
 console.log(a[2])
+
+
+
+let box = [1, 2, 3, 4, 5, 6, 7, 8]
+
+
+box.shift();
+box.shift();
+
+
+
+console.log(box)
+
+
+///box.unshift(1, 2, 3, 4, 5, 7); console.log(box)
