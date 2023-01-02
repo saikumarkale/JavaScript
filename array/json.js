@@ -35,5 +35,5 @@ const profiles = [
     },
 ];*/
 
-let filterProfiles = profiles.filter(profile => profile.active === true);
+const filterProfiles = profiles.filter(profile => profile.active === true);
 console.log(filterProfiles);
