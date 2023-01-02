@@ -27,22 +27,23 @@ var inputobj = {
 const findPath = (obj, path) => {
     let newpath = path.split('.');
     console.log(newpath);
+    if (!obj || !path) {
+        return undefined;
+    }
 
     for (let i = 0; i < newpath.length; i++) {
         if (obj.hasOwnProperty(newpath[i])) {
             i++;
-
         }
-        console.log(newpath[i]);
-
+        if (obj.hasOwnProperty)
+            console.log(newpath[i]);
     }
-    else {
-    console.log('undefined');
-}
-
 
 
 };
+
+
+
 findPath(inputobj, 'a.b.c');
 
 

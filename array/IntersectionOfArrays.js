@@ -7,7 +7,7 @@
  */
 
 
-function intersectionArrayM1(arr1, arr2) {
+/*function intersectionArrayM1(arr1, arr2) {
     let opArray = [];
 
     for (let i = 0; i < arr1.length; i++) {
@@ -21,7 +21,7 @@ function intersectionArrayM1(arr1, arr2) {
     }
     console.log(opArray);
 }
-intersectionArrayM1([1, 2, 3, 4, 6, 9], [3, 4, 6, 4, 5, 5, 8, 9]);
+intersectionArrayM1([1, 2, 3, 4, 6, 9], [3, 4, 6, 4, 5, 5, 8, 9]);*/
 
 
 
