@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Roboto&display=swap');
+
+        * {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: rgb(145, 207, 236);
+        }
+
+
+        .items {
+            width: 210px;
+            height: 230px;
+            border-radius: 5px;
+            /*background-color: transparent;*/
+        }
+
+        /*.items:hover{
+            transform: translateY(5px);
+            box-shadow: inset 0px 10px 20px 2px rgba(0, 0, 0, 0.25);
+            
+
+        }*/
+
+        #page {
+            /*background-color: rgb(44, 37, 37);*/
+            /*display: flex;*/
+            flex-wrap: wrap;
+            display: grid;
+            gap: 35px;
+            /*grid-template-columns:repeat(auto-fill, minmax(auto,250px));*/
+            grid-template-columns: repeat(auto-fill, 250px);
+            /*grid-template-columns: auto auto auto auto auto;*/
+
+        }
+
+        #page div {
+            /*object-fit: cover;*/
+            opacity: 0.85;
+            display: flex;
+            align-items: center;
+            border: 1px solid silver;
+            padding: 10px;
+            background-color: white;
+            flex-direction: column;
+            border-radius: 11px;
+            box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.5);
+            /* width: 300px;
+            height: 300px; */
+        }
+
+        #page div:hover {
+            font-weight: 600;
+
+
+            opacity: 1;
+            transform: translateY(-5px);
+            box-shadow: 0px 10px 20px 2px rgba(0, 0, 0, 1.5);
+        }
+
+        #search_bar {
+            width: 40%;
+            height: 40px;
+            border-radius: 8px;
+            border: 0px;
+        }
+
+        .description {
+            font-size: x-small;
+            font-weight: 150;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <h1>SHOP</h1>
+    <input id="search_bar" placeholder="Search for products"><br><br>
+
+
+    <div id="page"></div>
+
+
+</body>
+<script>
+    const contentUrl =
+        "https://fakestoreapi.com/products";
+
+    let data = {};
+    // Defining async function
+    async function getapi(url) {
+
+        // Storing response
+        const response = await fetch(url);
+
+        // Storing data in form of JSON
+        data = await response.json();
+        //console.log(data);
+
+        itemsFullData();
+
+    }
+    function itemsFullData() {
+        const container = document.createDocumentFragment();
+
+        //const divElement = document.createElement('div');
+        //divElement.className = "forData";
+        for (let i = 0; i < data.length; i++) {
+            //const id = data[i].id;
+            const price = data[i].price;
+            const title = data[i].title;
+            const image = data[i].image;
+            const category = data[i].category;
+            const description = data[i].description;
+            const divElement = document.createElement('div');
+            divElement.className = 'itemBlock';
+            divElement.innerHTML += `<img src="${image}" class="items">
+                                 <p class="title">${title}</p>
+                                 <p >RS<b> ${price * 80}<b></p>
+                                    <p class="description">${description}</p>`;
+
+            /* */
+            //adding data to container
+            container.append(divElement);
+        }
+        const page = document.getElementById("page");
+        page.appendChild(container);
+    };
+
+    document.getElementById('search_bar').addEventListener('keyup', () => {
+        const products = document.getElementsByClassName('itemBlock');
+        const userInput = document.getElementById('search_bar').value;
+        [...products].filter((product) => {
+            let titleData = product.querySelector('.title').innerText;
+            let descriptionData = product.querySelector('.description').innerText;
+            if (titleData.toUpperCase().includes(userInput.toUpperCase()) || descriptionData.toUpperCase().includes(userInput.toUpperCase())) {
+                product.style.display = '';
+            }
+            else {
+                product.style.display = 'none';
+            }
+        });
+    });
+
+    getapi(contentUrl);
+
+</script>
+
+</html>

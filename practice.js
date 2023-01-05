@@ -1,14 +1,7 @@
-let details = {
-    name: 'sai',
-    age: '23',
-    address: {
-        city: 'hyd',
-        country: 'india',
-    }
-}
+const inputTwo = "Every developer likes to mix kubernetes and javascript";
 
 
-const { name, age, address = { town: 'gch' } } = details;
+let res = inputTwo.map(data => data.length > 3)
 
 
-console.log(town);
+// Output - "E3y d7r l3s to mix k8s and j8t";
