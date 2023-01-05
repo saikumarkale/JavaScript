@@ -111,6 +111,20 @@
         itemsFullData();
 
     }
+    document.getElementById('search_bar').addEventListener('keyup', () => {
+        const products = document.getElementsByClassName('itemBlock');
+        const userInput = document.getElementById('search_bar').value;
+        [...products].filter((product) => {
+            let titleData = product.querySelector('.title').innerText;
+            let descriptionData = product.querySelector('.description').innerText;
+            if (titleData.toUpperCase().includes(userInput.toUpperCase()) || descriptionData.toUpperCase().includes(userInput.toUpperCase())) {
+                product.style.display = '';
+            }
+            else {
+                product.style.display = 'none';
+            }
+        });
+    });
     function itemsFullData() {
         const container = document.createDocumentFragment();
 
