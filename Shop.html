@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Roboto&display=swap');
 
@@ -22,7 +23,7 @@
             width: 210px;
             height: 230px;
             border-radius: 5px;
-            /*background-color: transparent;*/
+            background-color: transparent;
         }
 
         /*.items:hover{
@@ -89,6 +90,8 @@
     <input id="search_bar" placeholder="Search for products"><br><br>
 
 
+
+
     <div id="page"></div>
 
 
@@ -152,20 +155,7 @@
         page.appendChild(container);
     };
 
-    document.getElementById('search_bar').addEventListener('keyup', () => {
-        const products = document.getElementsByClassName('itemBlock');
-        const userInput = document.getElementById('search_bar').value;
-        [...products].filter((product) => {
-            let titleData = product.querySelector('.title').innerText;
-            let descriptionData = product.querySelector('.description').innerText;
-            if (titleData.toUpperCase().includes(userInput.toUpperCase()) || descriptionData.toUpperCase().includes(userInput.toUpperCase())) {
-                product.style.display = '';
-            }
-            else {
-                product.style.display = 'none';
-            }
-        });
-    });
+
 
     getapi(contentUrl);
 

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    function initCart() {
+        const shopingCart = [];
+        function itemsToCart(item) {
+            shopingCart.push(item);
+            return shopingCart;
+        }
+        return itemsToCart
+    }
+
+    const addingItemsIntoCart = initCart();
+    //addingItemsIntoCart({ id: 1, name: 'dabar hair oil' });
+   // addingItemsIntoCart({ id: 2, name: 'milk rusk' });
+    //console.log(shopingCart)
+
+</script>
+
+</html>
