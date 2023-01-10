@@ -12,8 +12,6 @@ function triplet(arr, KK) {
 
 
 }
-
-
 /*function triplet(array, K) {
     const set = new Set();
     for (let i = 0; i < array.length; i++) {
