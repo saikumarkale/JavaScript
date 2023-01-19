@@ -24,21 +24,6 @@ function nestedArray(inputArray) {
             let element = inputArray[i].toString()
             outPutArray.push(element);
         }*/
-
-        /*else if (function rec(inp) {
-            if (Array.isArray(inp)) {
-                inp.toString();
-                rec();
-            }
-            else {
-                outPutArray.push(inp);
-            }
-        }) {
-
-        }*/
-
-
-
     }
 
     return outPutArray
