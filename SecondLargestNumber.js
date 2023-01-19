@@ -8,15 +8,18 @@
  * 
  */
 
-let arr = [2, 2, 1, 2, 4, 34, 43];
+let arr = [-2, -2, -4, 2];
 
 function secondLargestNumber() {
-    var firstLargest = 0;
-    var secondLargest = 0;
+    var firstLargest = null;
+    var secondLargest = null;
+    if (arr.length < 2) {
+        return "invalid array"
+    }
     for (let i = 0; i < arr.length; i++) {
 
-        if (arr.length < 2) {
-            return "invalid array"
+        if (firstLargest === null) {
+            firstLargest = arr[i];
         }
 
         else if (arr[i] > firstLargest) {
@@ -28,12 +31,27 @@ function secondLargestNumber() {
         else if (arr[i] < firstLargest && arr[i] > secondLargest) {
             secondLargest = arr[i];
         }
-
-
     }
     return secondLargest
 }
 
 console.log(secondLargestNumber(arr));
 
+
+/*function sortString(str){
+    var arr = str.split('');
+    var tmp;
+    for(var i = 0; i < arr.length; i++){
+      for(var j = i + 1; j < arr.length; j++){
+        /* if ASCII code greater then swap the elements position*//*
+if(arr[i] > arr[j]){
+  tmp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = tmp;
+}
+}
+}
+return arr.join('');
+}
+*/
 
