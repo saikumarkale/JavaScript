@@ -35,6 +35,6 @@ function maxOcc(str) {
 
 
     }
-    return { char, count }
+    return { "character": char, "count": count }
 }
 console.log(maxOcc(str));
