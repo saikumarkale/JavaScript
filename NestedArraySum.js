@@ -8,7 +8,7 @@ function sumOfNestedArrayElements(inputArray) {
     for (let i = 0; i < inputArray.length; i++) {
         if (!Array.isArray(inputArray[i])) {
 
-            sum = sum + inputArray[i];
+            sum += inputArray[i];
         }
         else if (Array.isArray(inputArray[i])) {
             sumOfNestedArrayElements(inputArray[i]);
