@@ -1,8 +1,8 @@
 /**
- * take the input from the user and itrate the array and null integer
- * if the index[elem]is array then consider that as a seperate array and recurse untill the last nestede array.
- * if its not arry then we can add the index values to the empty indeger
- *
+ * create empty array"outPutArray" and null integer"sum".
+ * take the input from the user and itrate the array
+ * if the index[elem]is array then consider that as a seperate array and recurse function until the last nested array.
+ * if its not array then we can add the index values to the empty indeger.
  */
 
 let inp = [
