@@ -5,17 +5,15 @@
  * if its not array then we can add the index values to the empty indeger.
  */
 
-let inp = [
-    [1, 2, [3, [4], [5, 6]], [7]]
-];
+const inp = [1, 2, [3, [4], [5, 6]], [7], 1, 1, { name: 'name' }];
 let outPutArray = [];
-let sum = null;
+let sum = 0;
 function sumOfNestedArrayElements(input) {
 
     for (let i = 0; i < input.length; i++) {
         if (!Array.isArray(input[i])) {
-
-            sum += input[i];
+            if (typeof input[i] === "number")
+                sum += input[i];
         }
         else if (Array.isArray(input[i])) {
             sumOfNestedArrayElements(input[i]);
