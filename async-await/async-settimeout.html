@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body></body>
+
+</html>
+<script>
+    const getDetails = () => new Promise((reply, reject) => reply(2000));
+
+    const r = await getDetails();
+    console.log({ r })
+
+    setTimeout(async () => {
+        const result = await getDetails();
+        console.log("LN16: ", result);
+    }, 2000);
+
+    setTimeout(async function () {
+        const result = await getDetails();
+        console.log("LN21: ", result);
+    }, 2000);
+</script>

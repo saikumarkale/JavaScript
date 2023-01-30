@@ -1,7 +1,45 @@
-const inputTwo = "Every developer likes to mix kubernetes and javascript";
+const cart = ["cap", "shoes"];
 
 
-let res = inputTwo.map(data => data.length > 3)
+
+createOrder(cart, function () {
+    proceedToPayment(function () {
+        summary(function () {
+            walletBalance();
+        });
+    });
+});
 
 
-// Output - "E3y d7r l3s to mix k8s and j8t";
+const prom = createOrder(cart);
+
+const createOrder = () => {
+    return new Promise((reply, reject) => {
+        reply(true);
+    });
+};
+const proceedToPayment = () => {
+    return new Promise((reply, reject) => {
+        reply(true);
+    });
+};
+const summary = () => {
+    return new Promise((reply, reject) => {
+        reply(true);
+    });
+};
+
+const walletBalance = () => {
+    return new Promise((reply, reject) => {
+        reply(true);
+    });
+};
+
+
+async function visitRestro() {
+    const createOrderresponse = await createOrder();
+    console.log("Using Await", createOrderresponse);
+}
+
+
+
