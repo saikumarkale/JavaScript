@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+
+</style>
+
+<body>
+    <div>
+        <input type="text" id="inputBox">
+
+    </div>
+
+</body>
+
+</html>
+<script>
+    const inputBox = document.getElementById("inputBox");
+
+
+    // Check if there is any saved data in local storage
+    const savedData = localStorage.getItem("inputText");
+    if (savedData) {
+        inputBox.value = savedData;
+    }
+
+
+    function handleSearch(e) {
+        const { value } = e.target;
+
+
+        processChange(value);
+    }
+
+    function debounce(func, timeout = 100) {
+        let timer;
+        return (...args) => {
+
+            clearTimeout(timer);
+
+
+            timer = setTimeout(() => {
+                func.apply(this, args);
+            }, timeout);
+        };
+    }
+
+    const processChange = debounce((val) => searchProducts(val));
+
+    async function searchProducts() {
+        localStorage.setItem("inputText", inputBox.value)
+    }
+
+// Save the input text to local storage when the save button is clicked
+// saveBtn.addEventListener("click", function() {
+//   localStorage.setItem("inputText", inputBox.value);
+// });
+
+
+    /*const inputBox = document.getElementById("inputBox");
+    
+        // Check if there is any saved data in local storage
+        const savedData = localStorage.getItem("inputText");
+        if (savedData) {
+            inputBox.value = savedData;
+        }
+    
+        // Save the input text to local storage when the save button is clicked
+        saveBtn.addEventListener("click", function () {
+            localStorage.setItem("inputText", inputBox.value);*/
+
+
+</script>
