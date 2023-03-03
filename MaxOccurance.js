@@ -15,16 +15,6 @@ function maxOcc(str) {
     let map = {};
     let char = '';
     for (let i = 0; i < str.length; i++) {
-        /*for(let j=1;j<inp.length;j++){
-            if(inp[i]===inp[j]){
-                count1++;
-                arr.push(inp[i])
-                if(count1<count2){
-                    count2=count1;
-                }
-            }
-
-        }*/
         if (map[str[i]]) {
             map[str[i]]++;
         }

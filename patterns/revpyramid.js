@@ -10,4 +10,4 @@ function pyr(inp) {
     }
     return str
 }
-console.log(pyr(5));
+console.log(pyr(10));

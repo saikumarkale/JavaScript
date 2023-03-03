@@ -24,27 +24,46 @@ var inputobj = {
     }
 };
 
-const findPath = (obj, path) => {
-    let newpath = path.split('.');
-    console.log(newpath);
-    if (!obj || !path) {
-        return undefined;
+
+function findPath(obj, path) {
+    const paths = path.split('.');
+    //let value = obj;
+    for (let i = 0; i < paths.length; i++) {
+        // if (!value.hasOwnProperty(paths[i])) {
+        //     return undefined;
+        // }
+        obj = obj[paths[i]];
     }
-
-    for (let i = 0; i < newpath.length; i++) {
-        if (obj.hasOwnProperty(newpath[i])) {
-            i++;
-        }
-        if (obj.hasOwnProperty)
-            console.log(newpath[i]);
-    }
-
-
-};
+    return obj
+}
 
 
 
-findPath(inputobj, 'a.b.c');
+
+console.log(findPath(inputobj, 'a.b.c'));
+
+
+// const findPath = (obj, path) => {
+//     let newpath = path.split('.');
+//     //console.log(newpath);
+//     if (!obj || !path) {
+//         return undefined;
+//     }
+
+//     for (let i = 0; i < newpath.length; i++) {
+//         if (obj.hasOwnProperty(newpath[i])) {
+//             i++;
+//         }
+//         if (obj.hasOwnProperty)
+//             console.log(newpath[i]);
+//     }
+
+
+// };
+
+
+
+// findPath(inputobj, 'a.b.c');
 
 
 /*console.log(findPath(obj, 'a.b.c')); // 12

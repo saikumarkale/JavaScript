@@ -30,7 +30,6 @@
             transform: translateY(5px);
             box-shadow: inset 0px 10px 20px 2px rgba(0, 0, 0, 0.25);
             
-
         }*/
 
         #page {
@@ -80,14 +79,41 @@
             font-size: x-small;
             font-weight: 150;
         }
+
+        #cart {
+            width: 10%;
+            height: 40px;
+            border-radius: 8px;
+            border: 0px;
+            font-weight: bolder;
+            color: aliceblue;
+            background-color: rgb(97, 97, 218);
+        }
+
+        .add_to_cart {
+            width: 100%;
+            height: 30px;
+            border-radius: 7px;
+            border: 0px;
+            background-color: rgb(97, 97, 218);
+            color: aliceblue;
+        }
+
+        .add_to_cart:hover {
+            background-color: rgb(97, 218, 172);
+            color: black
+        }
     </style>
 </head>
 
 <body>
 
 
-    <h1>SHOP</h1>
-    <input id="search_bar" placeholder="Search for products"><br><br>
+    <h1>KALE</h1>
+    <div>
+        <input id="search_bar" placeholder="Search for products"><button id="cart" type="button">Cart</button><br><br>
+    </div>
+
 
 
 
@@ -119,8 +145,8 @@
         const userInput = document.getElementById('search_bar').value;
         [...products].filter((product) => {
             let titleData = product.querySelector('.title').innerText;
-            let descriptionData = product.querySelector('.description').innerText;
-            if (titleData.toUpperCase().includes(userInput.toUpperCase()) || descriptionData.toUpperCase().includes(userInput.toUpperCase())) {
+            let descriptionData = product.querySelector('.description')?.innerText;
+            if (titleData.toUpperCase().includes(userInput.toUpperCase()) || descriptionData?.toUpperCase().includes(userInput.toUpperCase())) {
                 product.style.display = '';
             }
             else {
@@ -134,7 +160,7 @@
         //const divElement = document.createElement('div');
         //divElement.className = "forData";
         for (let i = 0; i < data.length; i++) {
-            //const id = data[i].id;
+            const id = data[i].id;
             const price = data[i].price;
             const title = data[i].title;
             const image = data[i].image;
@@ -144,7 +170,8 @@
             divElement.className = 'itemBlock';
             divElement.innerHTML += `<img src="${image}" class="items">
                                  <p class="title">${title}</p>
-                                 <p >RS<b> ${price * 80}<b></p>
+                                 <p>RS<b> ${price * 80}<b></p>
+                                    <button class="add_to_cart" type="button">Add to Cart</button>
                                     `;
 
             /* */
