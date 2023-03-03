@@ -10,4 +10,5 @@ function pyr(inp) {
     }
     return str
 }
+
 console.log(pyr(10));
