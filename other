@@ -1,0 +1,44 @@
+const { mockFastify } = require('fastify');
+const { EmailOrchService } = require('../../services/v1/comm.email.orch.service');
+const mainRoute = require('./yourMainRouteFile'); // replace with your actual file path
+
+describe('mainRoute', () => {
+  let fastify;
+
+  beforeAll(() => {
+    fastify = mockFastify();
+  });
+
+  afterAll(() => {
+    fastify.close();
+  });
+
+  it('should handle POST /notifications/mock', async () => {
+    const emailOrchServiceMock = {
+      processEmailTopicMessage: jest.fn(),
+    };
+    jest.mock('../../services/v1/comm.email.orch.service', () => ({
+      EmailOrchService: jest.fn(() => emailOrchServiceMock),
+    }));
+
+    await mainRoute(fastify);
+
+    const mockRequest = { log: { trace: jest.fn() } };
+    const mockReply = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await fastify.inject({
+      method: 'POST',
+      url: '/notifications/mock',
+      handler: mainRoute.kafkaHandler,
+      payload: { message: 'failure_400' },
+    });
+
+    expect(emailOrchServiceMock.processEmailTopicMessage).toHaveBeenCalledWith(
+      { message: 'failure_400' },
+      fastify.config.LBG_KAFKA_COMM_MANAGEMENT_EMAIL_RT1
+    );
+    expect(mockRequest.log.trace).toHaveBeenCalledTimes(2); // Once for start, once for end
+    expect(mockReply.status).toHaveBeenCalledWith(200);
+    expect(mockReply.send).toHaveBeenCalledWith({ msg: 'done' });
+  });
+});
