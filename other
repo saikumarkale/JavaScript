@@ -42,3 +42,36 @@ describe('mainRoute', () => {
     expect(mockReply.send).toHaveBeenCalledWith({ msg: 'done' });
   });
 });
+
+
+
+
+
+
+
+
+
+
+jest.mock('../../services/v1/comm.email.orch.service');
+
+const EmailOrchService = require('../../services/v1/comm.email.orch.service');
+const mainRoute = require('./mainRoute');
+
+describe('mainRoute', () => {
+  let fastify;
+  let kafkaHandler;
+
+  beforeEach(() => {
+    fastify = { config: { LBG_KAFKA_COMM_MANAGEMENT_EMAIL_RT1: 'topic' } };
+    kafkaHandler = mainRoute(fastify);
+  });
+
+  test('should call emailorchservice.processEmailTopicMessage and reply with status 200', async () => {
+    const processEmailTopicMessageMock = jest.fn();
+    EmailOrchService.mockImplementation(() => ({ processEmailTopicMessage: processEmailTopicMessageMock }));
+
+    await kafkaHandler({}, { reply: jest.fn() });
+
+    expect(processEmailTopicMessageMock).toHaveBeenCalledWith({ message: 'failure_400' }, 'topic');
+  });
+});
