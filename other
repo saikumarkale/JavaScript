@@ -1,122 +1,209 @@
-const { DocumentTacticalService } = require('./DocumentTacticalService');
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs'); // Mocked in tests
+const path = require('path'); // Mocked in tests
 
-// Mock Fastify instance and other dependencies
-const fastifyMock = {
-  log: {
-    trace: jest.fn(),
-    error: jest.fn(),
-  },
-  appConstants: {}, // Provide your app constants
-  config: {}, // Provide your app config
-  SpannerInstance: jest.fn(),
-  downloadFileFromGcs: jest.fn(),
-};
+jest.mock('fastify');
+
+const { DocumentTacticalService } = require('./documentTacticalService'); // Assuming file path
 
 describe('DocumentTacticalService', () => {
-  let documentService;
+  let fastify, documentTacticalService;
 
   beforeEach(() => {
-    documentService = new DocumentTacticalService(fastifyMock);
+    fastify = {
+      log: {
+        trace: jest.fn(),
+        error: jest.fn(),
+      },
+      SpannerInstance: jest.fn(),
+      downloadFileFromGcs: jest.fn(),
+      deleteFile: jest.fn(),
+      getErrorMessage: jest.fn(),
+      ErrorConstants: {
+        INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+      },
+      appConstants: {},
+      config: {},
+    };
+
+    documentTacticalService = new DocumentTacticalService(fastify);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('getdocumentDetails', () => {
-    it('should get document details successfully', async () => {
-      // Mock databaseInstance.run to return documents
-      fastifyMock.SpannerInstance.mockResolvedValueOnce({
-        run: jest.fn().mockResolvedValueOnce([[{ value: 'document/file/path' }]]),
-      });
+    it('should return document path when retrieved successfully', async () => {
+      const documentId = 'valid-document-id';
+      const expectedDocumentPath = '/path/to/document.txt';
+      const mockDocuments = [{ value: expectedDocumentPath }];
 
-      const documentDetails = await documentService.getdocumentDetails('documentId');
+      fastify.SpannerInstance.mockResolvedValueOnce({ run: jest.fn().mockResolvedValueOnce([mockDocuments]) });
 
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'DocumentTacticalService: getdocumentDetails - starts'
-      );
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'DocumentTacticalService: getdocumentDetails - Querying the database for file path'
-      );
-      expect(fastifyMock.SpannerInstance).toHaveBeenCalled();
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'DocumentTacticalService: getdocumentDetails Document file path fetched successfully'
-      );
-      expect(documentDetails).toBe('document/file/path');
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'Document TacticalService: getdocumentDetails - ends'
-      );
+      const documentPath = await documentTacticalService.getdocumentDetails(documentId);
+
+      expect(documentPath).toBe(expectedDocumentPath);
+      expect(fastify.log.trace).toHaveBeenCalledTimes(2); // Starts and fetches path successfully
+      expect(fastify.log.error).not.toHaveBeenCalled();
     });
 
-    it('should handle database error', async () => {
-      // Mock databaseInstance.run to throw an error
-      fastifyMock.SpannerInstance.mockRejectedValueOnce(new Error('Database error'));
+    it('should throw error when database query fails', async () => {
+      const documentId = 'invalid-document-id';
+      const mockError = new Error('Database error');
 
-      const documentDetails = await documentService.getdocumentDetails('documentId');
+      fastify.SpannerInstance.mockRejectedValueOnce(mockError);
 
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'DocumentTacticalService: getdocumentDetails - starts'
-      );
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'DocumentTacticalService: getdocumentDetails - Querying the database for file path'
-      );
-      expect(fastifyMock.SpannerInstance).toHaveBeenCalled();
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'DocumentTacticalService: retrieveDocument Database error',
-        expect.any(Error)
-      );
-      expect(documentDetails).toBeUndefined();
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'Document TacticalService: getdocumentDetails - ends'
-      );
+      await expect(documentTacticalService.getdocumentDetails(documentId)).rejects.toThrow(mockError);
+      expect(fastify.log.trace).toHaveBeenCalledTimes(1); // Starts query
+      expect(fastify.log.error).toHaveBeenCalledTimes(1); // Logs error
+    });
+
+    it('should handle empty database response', async () => {
+      const documentId = 'non-existent-document';
+
+      fastify.SpannerInstance.mockResolvedValueOnce({ run: jest.fn().mockResolvedValueOnce([]) }); // Empty documents array
+
+      await expect(documentTacticalService.getdocumentDetails(documentId)).rejects.toEqual(new Error('Document not found'));
+      expect(fastify.log.trace).toHaveBeenCalledTimes(2); // Starts and fetches empty path
+      expect(fastify.log.error).not.toHaveBeenCalled();
     });
   });
 
   describe('retrieveDocument', () => {
-    it('should retrieve document successfully', async () => {
-      // Mock getdocumentDetails to return document path
-      documentService.getdocumentDetails = jest.fn().mockResolvedValueOnce('document/file/path');
+    let request;
 
-      // Mock downloadFileFromGcs to do nothing
-      fastifyMock.downloadFileFromGcs.mockResolvedValueOnce();
-
-      // Mock fs.readFileSync to return base64 document
-      fs.readFileSync = jest.fn().mockReturnValueOnce('base64Document');
-
-      const request = { params: { documentId: 'documentId' } };
-      const response = await documentService.retrieveDocument(request);
-
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'DocumentTacticalService: retrieveDocument - starts'
-      );
-      expect(documentService.getdocumentDetails).toHaveBeenCalledWith('documentId');
-      expect(fastifyMock.downloadFileFromGcs).toHaveBeenCalledWith(
-        'gcsBucketName',
-        'gcsDirName',
-        'documentName'
-      );
-      expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringContaining('downloads/documentName'), 'base64');
-      expect(response.status).toBe(200);
-      expect(response.body).toBe('base64Document');
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'Document TacticalService: retrieveDocument ends'
-      );
+    beforeEach(() => {
+      request = { params: { documentId: 'valid-document-id' } };
     });
 
-    it('should handle error during document retrieval', async () => {
-      // Mock getdocumentDetails to throw an error
-      documentService.getdocumentDetails = jest.fn().mockRejectedValueOnce(new Error('Error'));
+    it('should return document in base64 format on success', async () => {
+      const expectedDocumentPath = '/path/to/document.txt';
+      const mockDownloadedDocumentPath = path.join(__dirname, '../../../downloads/document.
 
-      const request = { params: { documentId: 'documentId' } };
-      const response = await documentService.retrieveDocument(request);
 
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'DocumentTacticalService: retrieveDocument - starts'
-      );
-      expect(documentService.getdocumentDetails).toHaveBeenCalledWith('documentId');
-      expect(fastifyMock.log.error).toHaveBeenCalledWith('error while retrieving document', expect.any(Error));
-      expect(response.status).toBe(500);
-      expect(fastifyMock.log.trace).toHaveBeenCalledWith(
-        'Document TacticalService: retrieveDocument ends'
-      );
+
+
+
+
+
+const fs = require('fs'); // Mocked in tests
+const path = require('path'); // Mocked in tests
+
+jest.mock('fastify');
+
+const { DocumentTacticalService } = require('./documentTacticalService'); // Assuming file path
+
+// Mock `fs.readFileSync` to avoid reading real files
+jest.mock('fs', () => ({
+  readFileSync: jest.fn(),
+}));
+
+describe('DocumentTacticalService', () => {
+  let fastify, documentTacticalService;
+
+  beforeEach(() => {
+    fastify = {
+      // ... other mocks as before
+    };
+
+    // Mock `fs.readFileSync` to return a sample base64 document
+    fs.readFileSync.mockReturnValue('Zm9vYmFy');
+
+    documentTacticalService = new DocumentTacticalService(fastify);
+  });
+
+  // ... existing test cases with potential improvements
+
+  // Additional test cases:
+
+  describe('retrieveDocument', () => {
+    // ... existing test cases
+
+    it('should handle errors when reading the downloaded document', async () => {
+      const expectedError = new Error('File read error');
+      fs.readFileSync.mockRejectedValueOnce(expectedError);
+
+      await expect(documentTacticalService.retrieveDocument(request)).rejects.toThrow(expectedError);
+      expect(fastify.log.error).toHaveBeenCalledWith('error while retrieving document');
+      expect(fastify.log.error).toHaveBeenCalledWith(expectedError);
+    });
+
+    it('should handle errors when deleting the downloaded file', async () => {
+      const expectedError = new Error('File delete error');
+      fastify.deleteFile.mockRejectedValueOnce(expectedError);
+
+      try {
+        await documentTacticalService.retrieveDocument(request);
+      } catch (error) {
+        // Expect a custom error with a meaningful message
+        expect(error.errors[0]).toEqual(new Error('Failed to delete temporary file'));
+      }
+      expect(fastify.log.error).toHaveBeenCalledWith(expectedError);
     });
   });
+});
+
+
+
+
+
+
+const { DocumentTacticalService } = require('./your-module-path');
+const Fastify = require('fastify');
+
+describe('DocumentTacticalService', () => {
+  let fastify;
+
+  beforeAll(async () => {
+    fastify = Fastify();
+    // Additional setup for your Fastify instance, if needed
+    await fastify.ready();
+  });
+
+  afterAll(async () => {
+    await fastify.close();
+  });
+
+  test('getdocumentDetails should return document details', async () => {
+    const documentId = 'your_document_id';
+    const service = new DocumentTacticalService(fastify);
+
+    // Mocking the database response
+    const mockDatabaseInstance = {
+      run: jest.fn().mockResolvedValue([[{ value: '/your/gcs/path' }]]),
+    };
+    service.fastify.SpannerInstance = jest.fn().mockResolvedValue(mockDatabaseInstance);
+
+    const result = await service.getdocumentDetails(documentId);
+    expect(result).toBe('/your/gcs/path');
+  });
+
+  test('retrieveDocument should return base64 document', async () => {
+    const documentId = 'your_document_id';
+    const service = new DocumentTacticalService(fastify);
+
+    // Mocking the getdocumentDetails method
+    service.getdocumentDetails = jest.fn().mockResolvedValue('/your/gcs/path');
+
+    // Mocking downloadFileFromGcs and deleteFile methods
+    service.fastify.downloadFileFromGcs = jest.fn().mockResolvedValue();
+    service.fastify.deleteFile = jest.fn().mockResolvedValue();
+
+    // Mocking readFileSync to simulate a base64 document
+    fs.readFileSync = jest.fn().mockReturnValue('base64encodedocument');
+
+    const request = {
+      params: {
+        documentId,
+      },
+    };
+
+    const result = await service.retrieveDocument(request);
+
+    expect(result.status).toBe(200);
+    expect(result.body.document_id).toBe(documentId);
+    expect(result.body.document).toBe('base64encodedocument');
+  });
+
+  // Additional test cases can be added based on your requirements
 });
