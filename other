@@ -1,58 +1,83 @@
+const { Storage } = require('@google-cloud/storage');
 const fp = require('fastify-plugin');
-const fs = require('fs');
-const fileHandlerPlugin = require('./fileHandlerPlugin'); // Assuming fileHandlerPlugin.js is the filename
+const path = require('path');
 
-// Mock fastify instance
+// Mocking fastify
 const fastifyMock = {
   log: {
     trace: jest.fn(),
-    error: jest.fn(),
+    error: jest.fn()
   },
-  decorate: jest.fn(),
+  decorate: jest.fn()
 };
 
-// Mock fs.unlink method
-jest.mock('fs', () => ({
-  existsSync: jest.fn(),
-  unlink: jest.fn(),
+// Mocking Storage class and its methods
+jest.mock('@google-cloud/storage', () => ({
+  Storage: jest.fn().mockImplementation(() => ({
+    bucket: jest.fn().mockReturnThis(),
+    file: jest.fn().mockReturnThis(),
+    download: jest.fn()
+  }))
 }));
 
-describe('fileHandlerPlugin', () => {
-  beforeEach(() => {
+// Mocking path module
+jest.mock('path', () => ({
+  dirname: jest.fn(),
+  join: jest.fn()
+}));
+
+describe('downloadPlugin', () => {
+  let downloadPlugin;
+
+  beforeAll(() => {
+    downloadPlugin = require('./downloadPlugin');
+  });
+
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should decorate fastify instance with deleteFile method', () => {
-    fileHandlerPlugin(fastifyMock);
-    expect(fastifyMock.decorate).toHaveBeenCalledWith('deleteFile', expect.any(Function));
+  it('should decorate fastify with downloadFileFromGcs', async () => {
+    await downloadPlugin(fastifyMock);
+    expect(fastifyMock.decorate).toHaveBeenCalledWith('downloadFileFromGcs', expect.any(Function));
   });
 
-  it('should delete file if it exists', async () => {
-    const filePath = '/path/to/file.txt';
-    fs.existsSync.mockReturnValue(true);
-    fs.unlink.mockImplementation((filePath, callback) => callback(null)); // Mocking success
-    await fastifyMock.deleteFile(filePath);
-    expect(fs.existsSync).toHaveBeenCalledWith(filePath);
-    expect(fs.unlink).toHaveBeenCalledWith(filePath, expect.any(Function));
-    expect(fastifyMock.log.trace).toHaveBeenCalledWith(`file deleted from ${filePath}`);
+  it('should download file from GCS bucket', async () => {
+    const fileName = 'example.txt';
+    const gcsBucketName = 'bucket';
+    const gcsDirName = 'dir';
+    const destinationFilePath = '/path/to/downloads/example.txt';
+
+    // Mocking path methods
+    path.dirname.mockReturnValue('/path/to/main');
+
+    // Calling the decorated function
+    await fastifyMock.downloadFileFromGcs(gcsBucketName, gcsDirName, fileName);
+
+    // Expectations
+    expect(Storage).toHaveBeenCalledTimes(1);
+    expect(Storage).toHaveBeenCalledWith();
+
+    expect(fastifyMock.log.trace).toHaveBeenCalledWith('gcp Download Plugin starts');
+    expect(path.dirname).toHaveBeenCalledWith(expect.any(String));
+    expect(path.join).toHaveBeenCalledWith('/path/to/main', '../downloads/example.txt');
+    expect(fastifyMock.log.trace).toHaveBeenCalledWith(expect.stringContaining('downloaded to'));
+    expect(fastifyMock.log.error).not.toHaveBeenCalled();
   });
 
-  it('should handle error if file deletion fails', async () => {
-    const filePath = '/path/to/file.txt';
-    const error = new Error('File deletion failed');
-    fs.existsSync.mockReturnValue(true);
-    fs.unlink.mockImplementation((filePath, callback) => callback(error)); // Mocking error
-    await expect(fastifyMock.deleteFile(filePath)).rejects.toThrowError(error);
-    expect(fs.existsSync).toHaveBeenCalledWith(filePath);
-    expect(fs.unlink).toHaveBeenCalledWith(filePath, expect.any(Function));
-    expect(fastifyMock.log.error).toHaveBeenCalledWith('Error while deleting document file');
-  });
+  it('should handle error while downloading file from GCS bucket', async () => {
+    const errorMessage = 'Error message';
+    const error = new Error(errorMessage);
+    Storage.mockImplementationOnce(() => ({
+      bucket: jest.fn().mockReturnThis(),
+      file: jest.fn().mockReturnThis(),
+      download: jest.fn().mockRejectedValue(error)
+    }));
 
-  it('should not attempt to delete file if it does not exist', async () => {
-    const filePath = '/path/to/nonexistent_file.txt';
-    fs.existsSync.mockReturnValue(false);
-    await fastifyMock.deleteFile(filePath);
-    expect(fs.existsSync).toHaveBeenCalledWith(filePath);
-    expect(fs.unlink).not.toHaveBeenCalled();
+    // Calling the decorated function
+    await expect(fastifyMock.downloadFileFromGcs('bucket', 'dir', 'example.txt')).rejects.toThrowError(errorMessage);
+
+    // Expectations
+    expect(fastifyMock.log.error).toHaveBeenCalledWith('Error while downloading file from gcp Bucket');
   });
 });
