@@ -1,83 +1,64 @@
-const { Storage } = require('@google-cloud/storage');
 const fp = require('fastify-plugin');
-const path = require('path');
+const { lbgkafkaInstance } = require('./lbgkafkaInstance'); // Assuming the filename is lbgkafkaInstance.js
 
-// Mocking fastify
-const fastifyMock = {
-  log: {
-    trace: jest.fn(),
-    error: jest.fn()
-  },
-  decorate: jest.fn()
-};
+describe('lbgkafkaInstance plugin', () => {
+  let fastifyMock;
 
-// Mocking Storage class and its methods
-jest.mock('@google-cloud/storage', () => ({
-  Storage: jest.fn().mockImplementation(() => ({
-    bucket: jest.fn().mockReturnThis(),
-    file: jest.fn().mockReturnThis(),
-    download: jest.fn()
-  }))
-}));
-
-// Mocking path module
-jest.mock('path', () => ({
-  dirname: jest.fn(),
-  join: jest.fn()
-}));
-
-describe('downloadPlugin', () => {
-  let downloadPlugin;
-
-  beforeAll(() => {
-    downloadPlugin = require('./downloadPlugin');
+  beforeEach(() => {
+    fastifyMock = {
+      config: {
+        NODE_ENV: 'local', // Example value for NODE_ENV
+        LBG_KAFKA_BOOTSTRAP_SERVER: 'kafka-server:9092', // Example value for Kafka bootstrap server
+        LBG_KAFKA_CLIENT_SASL_API_KEY: 'kafka-api-key', // Example value for Kafka client SASL API key
+        LBG_KAFKA_CLIENT_SASL_API_SECRET: 'kafka-api-secret', // Example value for Kafka client SASL API secret
+      },
+      loadGroupCertificates: jest.fn(), // Mocking the loadGroupCertificates function
+      decorate: jest.fn(),
+    };
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should decorate fastify with downloadFileFromGcs', async () => {
-    await downloadPlugin(fastifyMock);
-    expect(fastifyMock.decorate).toHaveBeenCalledWith('downloadFileFromGcs', expect.any(Function));
+  it('should create Kafka instance with local configuration', async () => {
+    await lbgkafkaInstance(fastifyMock);
+    expect(fastifyMock.decorate).toHaveBeenCalledWith('createKafkaInstance', expect.any(Function));
+
+    // Assuming the Kafka constructor is called once with the provided local configuration
+    expect(Kafka).toHaveBeenCalledTimes(1);
+    expect(Kafka).toHaveBeenCalledWith({
+      brokers: ['kafka-server:9092'],
+      ssl: false,
+      sasl: {
+        mechanism: 'plain',
+        username: 'kafka-api-key',
+        password: 'kafka-api-secret',
+      }
+    });
   });
 
-  it('should download file from GCS bucket', async () => {
-    const fileName = 'example.txt';
-    const gcsBucketName = 'bucket';
-    const gcsDirName = 'dir';
-    const destinationFilePath = '/path/to/downloads/example.txt';
+  it('should create Kafka instance with non-local configuration', async () => {
+    fastifyMock.config.NODE_ENV = 'prod'; // Changing NODE_ENV to a non-local value
+    fastifyMock.loadGroupCertificates.mockResolvedValue({
+      MTLS_CA: 'ca-cert',
+      MTLS_KEY: 'key',
+      MTLS_CERT: 'cert',
+    });
 
-    // Mocking path methods
-    path.dirname.mockReturnValue('/path/to/main');
+    await lbgkafkaInstance(fastifyMock);
+    expect(fastifyMock.decorate).toHaveBeenCalledWith('createKafkaInstance', expect.any(Function));
 
-    // Calling the decorated function
-    await fastifyMock.downloadFileFromGcs(gcsBucketName, gcsDirName, fileName);
-
-    // Expectations
-    expect(Storage).toHaveBeenCalledTimes(1);
-    expect(Storage).toHaveBeenCalledWith();
-
-    expect(fastifyMock.log.trace).toHaveBeenCalledWith('gcp Download Plugin starts');
-    expect(path.dirname).toHaveBeenCalledWith(expect.any(String));
-    expect(path.join).toHaveBeenCalledWith('/path/to/main', '../downloads/example.txt');
-    expect(fastifyMock.log.trace).toHaveBeenCalledWith(expect.stringContaining('downloaded to'));
-    expect(fastifyMock.log.error).not.toHaveBeenCalled();
-  });
-
-  it('should handle error while downloading file from GCS bucket', async () => {
-    const errorMessage = 'Error message';
-    const error = new Error(errorMessage);
-    Storage.mockImplementationOnce(() => ({
-      bucket: jest.fn().mockReturnThis(),
-      file: jest.fn().mockReturnThis(),
-      download: jest.fn().mockRejectedValue(error)
-    }));
-
-    // Calling the decorated function
-    await expect(fastifyMock.downloadFileFromGcs('bucket', 'dir', 'example.txt')).rejects.toThrowError(errorMessage);
-
-    // Expectations
-    expect(fastifyMock.log.error).toHaveBeenCalledWith('Error while downloading file from gcp Bucket');
+    // Assuming the Kafka constructor is called once with the provided non-local configuration
+    expect(Kafka).toHaveBeenCalledTimes(1);
+    expect(Kafka).toHaveBeenCalledWith({
+      brokers: ['kafka-server:9092'],
+      ssl: {
+        rejectUnauthorized: false,
+        ca: 'ca-cert',
+        key: 'key',
+        cert: 'cert',
+      }
+    });
   });
 });
