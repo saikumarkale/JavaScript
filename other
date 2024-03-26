@@ -1,6 +1,15 @@
 const fp = require('fastify-plugin');
 const { lbgkafkaInstance } = require('./lbgkafkaInstance'); // Assuming the filename is lbgkafkaInstance.js
 
+// Mocking Kafka module
+jest.mock('kafkajs', () => ({
+  Kafka: jest.fn().mockImplementation(() => ({
+    brokers: jest.fn(),
+    ssl: jest.fn(),
+    sasl: jest.fn(),
+  })),
+}));
+
 describe('lbgkafkaInstance plugin', () => {
   let fastifyMock;
 
@@ -26,8 +35,8 @@ describe('lbgkafkaInstance plugin', () => {
     expect(fastifyMock.decorate).toHaveBeenCalledWith('createKafkaInstance', expect.any(Function));
 
     // Assuming the Kafka constructor is called once with the provided local configuration
-    expect(Kafka).toHaveBeenCalledTimes(1);
-    expect(Kafka).toHaveBeenCalledWith({
+    expect(fp.Kafka).toHaveBeenCalledTimes(1);
+    expect(fp.Kafka).toHaveBeenCalledWith({
       brokers: ['kafka-server:9092'],
       ssl: false,
       sasl: {
@@ -50,8 +59,8 @@ describe('lbgkafkaInstance plugin', () => {
     expect(fastifyMock.decorate).toHaveBeenCalledWith('createKafkaInstance', expect.any(Function));
 
     // Assuming the Kafka constructor is called once with the provided non-local configuration
-    expect(Kafka).toHaveBeenCalledTimes(1);
-    expect(Kafka).toHaveBeenCalledWith({
+    expect(fp.Kafka).toHaveBeenCalledTimes(1);
+    expect(fp.Kafka).toHaveBeenCalledWith({
       brokers: ['kafka-server:9092'],
       ssl: {
         rejectUnauthorized: false,
